@@ -2,28 +2,33 @@
 {
     class PlayerDetails
     {
-        public string name;
+        public string m_Name;
+        public byte m_Points;
+        public char m_PlayerSymbol;
+
+        public PlayerDetails()
+        {
+            m_Name = string.Empty;
+            m_Points = 0;
+            m_PlayerSymbol = ' ';
+        }
 
         public string Name
         {
-            get => name;
-            set => name = value;
+            get => m_Name;
+            set => m_Name = value;
         }
-
-        private byte points = 0;
-
+      
         public byte Points
         {
-            get => points;
-            set => points = value;
+            get => m_Points;
+            set => m_Points = value;
         }
-
-        public char playerSymbol = ' ';
-
+        
         public char PlayerSymbol
         {
-            get => playerSymbol;
-            set => playerSymbol = value;
+            get => m_PlayerSymbol;
+            set => m_PlayerSymbol = value;
         }
     }
 }

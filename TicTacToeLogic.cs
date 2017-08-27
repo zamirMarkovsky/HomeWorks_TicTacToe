@@ -31,19 +31,18 @@ namespace C17_Ex02
 
             Console.WriteLine("\n{0} begins, follow the orders in every level\n" +
                               "to quit at any point press 'Q', " +
-                              "press 'Enter to start the game!'\n", player1.Name);
+                              "press 'Enter to start the game!'\n", player1.m_Name);
             Console.ReadKey();
             Screen.Clear();
 
             bool gameRunning = true;
-            bool isPlayerLost = false;
 
             while (gameRunning)
             {
                 TicTacToeUserInterface.drawTable(i_table);//draws the table
                 gameRunning = playerInput(symbols[numOfTurns % 2], i_table, 
                               (numOfTurns % 2 == 0) ? player1 : player2);
-                isPlayerLost = checkforStraight(i_table, symbols[numOfTurns % 2], numOfTurns);
+                bool isPlayerLost = checkforStraight(i_table, symbols[numOfTurns % 2], numOfTurns);
                 
                 if (isPlayerLost)
                 {
@@ -52,13 +51,13 @@ namespace C17_Ex02
                 numOfTurns++;
                 Screen.Clear();
             }
-            if (player1.PlayerSymbol == symbols[numOfTurns % 2])
+            if (player1.m_PlayerSymbol == symbols[numOfTurns % 2])
             {
-                player2.Points++;
+                player2.m_Points++;
             }
-            else if (player2.PlayerSymbol == symbols[numOfTurns % 2])
+            else if (player2.m_PlayerSymbol == symbols[numOfTurns % 2])
             {
-                player1.Points++;
+                player1.m_Points++;
             }
         }
 
@@ -67,15 +66,28 @@ namespace C17_Ex02
             bool isInteger = false;
             bool isInsertable = false;
 
-            Console.WriteLine("{0}, Please make your move", player.Name);
+            Console.WriteLine("{0}, Please make your move", player.m_Name);
             do
             {              
                 try
                 {
                     Console.Write("please enter row selection: ");
-                    char rowInput = char.Parse(Console.ReadLine());
+                    string input1 = Console.ReadLine();
+                    if (string.IsNullOrEmpty(input1))
+                    {
+                        Console.WriteLine("You didn't enter a value!");
+                        continue;
+                    }
+                    char rowInput = char.Parse(input1);
+
                     Console.Write("Please enter collumn selection: ");
-                    char colInput = char.Parse(Console.ReadLine());
+                    string input2 = Console.ReadLine();
+                    if (string.IsNullOrEmpty(input2))
+                    {
+                        Console.WriteLine("You didn't enter a value!");
+                        continue;
+                    }
+                    char colInput = char.Parse(input2);
 
                     // Checks if player wants to end match 
                     if (colInput == 'Q' || rowInput == 'Q' || colInput == 'q' || rowInput == 'q')
@@ -109,7 +121,7 @@ namespace C17_Ex02
                 {
                     Console.WriteLine("Your input is invalid, please try again");
                 }
-            } while (!isInteger && isInsertable == false);
+            } while (!isInteger || !isInsertable);
 
             return true;
         }

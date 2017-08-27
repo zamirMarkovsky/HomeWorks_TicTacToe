@@ -155,7 +155,7 @@ namespace C17_Ex02
         public static void inputName(ref PlayerDetails io_player)
         {
             Console.Write("Enter your name: ");
-            io_player.Name = Console.ReadLine();
+            io_player.m_Name = Console.ReadLine();
         }
 
         public static void drawTable(char[,] io_mat)
