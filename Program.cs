@@ -8,6 +8,7 @@ namespace C17_Ex02
         {
             TicTacToeUserInterface.displayWelcome(); //Displays welcome to game
             TicTacToeUserInterface.displayMenu(); //Displays game menu and start the game
+            TicTacToeUserInterface.optionSelect();
         }
     }
 }

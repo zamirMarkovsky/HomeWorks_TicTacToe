@@ -1,74 +1,17 @@
 ﻿using System;
-using C17_Ex02;
-using Ex02.ConsoleUtils;
 
 namespace C17_Ex02
 {
     class TicTacToeLogic
     {
-        private static readonly char[] symbols = {'X', 'O'};
-        private static int numOfTurns = 0;
-
-        // TODO: singleplayer game
-        public static void singlePlayer(char[,] i_table)
-        {
-            throw new NotImplementedException();
-        }
-
-        // multiplayer game
-        public static void multiPlayer(char[,] i_table)
-        {
-            PlayerDetails player1 = new PlayerDetails();
-            PlayerDetails player2 = new PlayerDetails();
-
-            player1.PlayerSymbol = symbols[0];
-            player2.PlayerSymbol = symbols[1];
-
-            Console.Write("\nFirst player - ");
-            TicTacToeUserInterface.inputName(ref player1);
-            Console.Write("Second player -");
-            TicTacToeUserInterface.inputName(ref player2);
-
-            Console.WriteLine("\n{0} begins, follow the orders in every level\n" +
-                              "to quit at any point press 'Q', " +
-                              "press 'Enter to start the game!'\n", player1.m_Name);
-            Console.ReadKey();
-            Screen.Clear();
-
-            bool gameRunning = true;
-
-            while (gameRunning)
-            {
-                TicTacToeUserInterface.drawTable(i_table);//draws the table
-                gameRunning = playerInput(symbols[numOfTurns % 2], i_table, 
-                              (numOfTurns % 2 == 0) ? player1 : player2);
-                bool isPlayerLost = checkforStraight(i_table, symbols[numOfTurns % 2], numOfTurns);
-                
-                if (isPlayerLost)
-                {
-                    break;
-                }
-                numOfTurns++;
-                Screen.Clear();
-            }
-            if (player1.m_PlayerSymbol == symbols[numOfTurns % 2])
-            {
-                player2.m_Points++;
-            }
-            else if (player2.m_PlayerSymbol == symbols[numOfTurns % 2])
-            {
-                player1.m_Points++;
-            }
-        }
-
-        private static bool playerInput(char i_symbol, char[,] io_table, PlayerDetails player)
+        //The method inserts player's move and returns true when move accepted, false if he choose to end match
+        public static bool playerInput(char i_symbol, char[,] io_table, PlayerDetails player)
         {
             bool isInteger = false;
-            bool isInsertable = false;
 
             Console.WriteLine("{0}, Please make your move", player.m_Name);
             do
-            {              
+            {
                 try
                 {
                     Console.Write("please enter row selection: ");
@@ -95,23 +38,21 @@ namespace C17_Ex02
                         return false;
                     }
 
-                    int indexRow = 0, indexCol = 0;
-                    isInteger = int.TryParse(rowInput.ToString(), out indexRow) && 
-                                int.TryParse(colInput.ToString(), out indexCol);
+                    int indexRow;
+                    int indexCol;
+                    isInteger = int.TryParse(rowInput.ToString(), out indexRow);
+                    isInteger = int.TryParse(colInput.ToString(), out indexCol);
 
                     if (!isInteger)
                     {
                         throw new InvalidOperationException("please enter numbers of rows and cols");
                     }
-                    else
-                    {
-                        isInsertable = TryInsert(i_symbol, ref io_table, indexRow - 1, indexCol - 1);
-                        if (isInsertable == false)
-                        {
-                            throw new InvalidOperationException("The is no space in this spot, please try again");
-                        }
-                    }
 
+                    bool isInsertable = TryInsert(i_symbol, ref io_table, indexRow - 1, indexCol - 1);
+                    if (!isInsertable)
+                    {
+                        throw new InvalidOperationException("There is no space in this spot, please try again");
+                    }
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -121,90 +62,145 @@ namespace C17_Ex02
                 {
                     Console.WriteLine("Your input is invalid, please try again");
                 }
-            } while (!isInteger || !isInsertable);
+            } while (!isInteger && !isInteger);
 
-            return true;
+            return true; //Returns that player made his move
         }
 
+        public static void computerMove(ref char[,] io_table, PlayerDetails o_compDetails)
+        {
+            Random randNum = new Random();
+            int rowInput;
+            int colInput;
+
+            do
+            {
+                rowInput = randNum.Next(io_table.GetLength(0));
+                colInput = randNum.Next(io_table.GetLength(0));
+            } while (!TryInsert(o_compDetails.m_PlayerSymbol, ref io_table, rowInput, colInput));
+        }
+
+        //The method tries to insert to symbol to the desired place and returns if successful
         private static bool TryInsert(char symbol, ref char[,] io_table, int rowInput, int colInput)
         {
+            bool isChanged = false;
+
             if (io_table[rowInput, colInput] == ' ')
             {
                 io_table[rowInput, colInput] = symbol;
+                isChanged = true;
             }
-
-            return io_table[rowInput, colInput] == symbol;
+            return isChanged;
         }
 
-        private static bool checkforStraight(char[,] io_table, char symbol, int numOfSteps)
+        //The method checks all the possible options for a streight and returns if successful
+        public static bool checkforStraight(char[,] io_table, char symbol, int numOfSteps)
         {
             int edgeSize = io_table.GetLength(0);
             bool isStraight = false;
 
-            if (numOfSteps >= (edgeSize * 2 - 1))
+            if (numOfSteps >= (edgeSize * 2 - 2))
             {
+                int matchesCount;
+                
                 //Check rows
-                for (int rowIndex = 0; rowIndex < edgeSize && isStraight == false; rowIndex++)
+                for (int rowIndex = 0; rowIndex < edgeSize && !isStraight; rowIndex++)
                 {
-                    for (int colIndex = 0; colIndex < edgeSize - 1; colIndex++)
+                    matchesCount = 0;
+                    for (int colIndex = 0; colIndex < edgeSize; colIndex++)
                     {
-                        if (io_table[rowIndex, colIndex] != io_table[rowIndex, colIndex + 1] ||
-                            io_table[rowIndex, colIndex] != symbol)
+                        if (io_table[rowIndex, colIndex] == symbol)
                         {
-                            break;
-                        }
-                        else if (colIndex == edgeSize - 2)
-                        {
-                            isStraight = true;
+                            matchesCount++;
                         }
                     }
+                    isStraight = edgeSize == matchesCount;
                 }
                 //check columns
-                for (int rowIndex = 0; rowIndex < edgeSize; rowIndex++)
+                for (int colIndex = 0; colIndex < edgeSize && !isStraight; colIndex++)
                 {
-                    for (int colIndex = 0; colIndex < edgeSize - 1; colIndex++)
+                    matchesCount = 0;
+                    for (int rowIndex = 0; rowIndex < edgeSize; rowIndex++)
                     {
-                        if (io_table[colIndex, rowIndex] != io_table[colIndex, rowIndex + 1] ||
-                            io_table[colIndex, rowIndex] != symbol)
+                        if (io_table[rowIndex, colIndex] == symbol)
                         {
-                            break;
-                        }
-                        else if (rowIndex == edgeSize - 2)
-                        {
-                            isStraight = true;
+                            matchesCount++;
                         }
                     }
+                    isStraight = edgeSize == matchesCount;
                 }
                 //Check first diagonal
-                for (int rowAndColIndex = 0; rowAndColIndex < edgeSize - 1; rowAndColIndex++)
+                matchesCount = 0;
+                for (int rowAndColIndex = 0; rowAndColIndex < edgeSize && !isStraight; rowAndColIndex++)
                 {
-                    if (io_table[rowAndColIndex, rowAndColIndex] != io_table[rowAndColIndex, rowAndColIndex + 1]
-                        || io_table[rowAndColIndex, rowAndColIndex] != symbol)
+                    if (io_table[rowAndColIndex, rowAndColIndex] == symbol)
                     {
-                        break;
+                        matchesCount++;
                     }
-                    else if (rowAndColIndex == edgeSize - 2)
-                    {
-                        isStraight = true;
-                    }
+                    isStraight = edgeSize == matchesCount;
                 }
                 //Check second diagonal
-                int collumnIndex = edgeSize - 1;
-                for (int rowIndex = 0; rowIndex < edgeSize - 1; rowIndex++)
+                matchesCount = 0;
+                for (int rowIndex = edgeSize - 1; rowIndex >= 0 && !isStraight; rowIndex--)
                 {
-                    if (io_table[rowIndex, collumnIndex] != io_table[rowIndex + 1, collumnIndex - 1] ||
-                        io_table[rowIndex, collumnIndex] != symbol)
+                    int colIndex = (edgeSize - 1) - rowIndex;
+                    if (io_table[rowIndex, colIndex] == symbol)
                     {
-                        break;
+                        matchesCount++;
                     }
-                    else if (collumnIndex == 1)
-                    {
-                        isStraight = true;
-                    }
-                    collumnIndex--;
+                    isStraight = edgeSize == matchesCount;
                 }
+
             }
             return isStraight;
         }
+
+        //The method declairs the winner
+        public static void findWinner(PlayerDetails io_player1, PlayerDetails io_player2, char symbol)
+        {
+            PlayerDetails winner;
+            if (io_player1.m_PlayerSymbol == symbol)
+            {
+                io_player1.m_Points++;
+                winner = io_player1;
+            }
+            else
+            {
+                io_player2.m_Points++;
+                winner = io_player2;
+            }
+
+            Console.WriteLine("\n" +
+                              "==========================\n" +
+                              "    {0} won the game,\n" +
+                              "    Congratulations!!\n" +  
+                              "==========================", winner.m_Name);
+        }
+        /*
+        private static void playAgain()
+        {
+            int userChoise;
+            bool validInput = true;
+            do
+            {
+                try
+                {
+                    Console.WriteLine("Would you like to play again?\n1.Yes\n2.No");
+                    userChoise = Console.Read();
+                    if(userChoise!=2&&userChoise!=1)
+                    {
+                        throw new Exception("Choose only 1 or 2");
+                    }
+                    else
+                    {
+                        validInput = true;
+                    }
+                }catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            } while (validInput);
+        } 
+        */
     }
 }
