@@ -6,11 +6,10 @@ namespace C17_Ex02
 
     class TicTacToeUserInterface
     {
-
-
         private static readonly char[] m_Symbols = {'X', 'O'};
         private static int m_NumOfTurns;
         private static bool m_GameRunning = true;
+        private static int m_PointsSum = 0;
 
         private enum StartGameOptions
         {
@@ -187,9 +186,6 @@ namespace C17_Ex02
                             inputName(ref player);
                             computer.m_Name = "Computer";
 
-                            gameTable = tableSizeInput();
-                            singlePlayer(ref gameTable, ref player, ref computer);
-
                             do
                             {
                                 gameTable = tableSizeInput();
@@ -209,6 +205,7 @@ namespace C17_Ex02
 
                             if (endAnswer == EndGameOptions.MainMenu)
                             {
+                                Screen.Clear();
                                 displayMenu();
                                 continue;
                             }
@@ -248,6 +245,7 @@ namespace C17_Ex02
 
                             if (endAnswer == EndGameOptions.MainMenu)
                             {
+                                Screen.Clear();
                                 displayMenu();
                                 continue;
                             }
@@ -306,29 +304,24 @@ namespace C17_Ex02
             Console.Write("Match Result - ");
             Console.WriteLine("{0} : {1}", p1Details.m_Points, p2Details.m_Points);
 
-            if (p1Details.m_Points == p2Details.m_Points) //Draw
+            if (m_PointsSum == p1Details.m_Points + p2Details.m_Points) //Draw
             {
                 Console.WriteLine("\n" +
                                   "==========================\n" +
                                   "      You got draw!!\n" +
                                   "==========================");
             }
-            else if (p1Details.m_Points > p2Details.m_Points) //Player 1 won
+            else //Checks who won and prints his name
             {
                 Console.WriteLine("\n" +
                                   "==========================\n" +
                                   "    {0} won the game,\n" +
                                   "    Congratulations!!\n" +
-                                  "==========================", p1Details.m_Name);
+                                  "==========================",
+                    p1Details.m_Points > p2Details.m_Points ? p1Details.m_Name : p2Details.m_Name);
             }
-            else // player 2 won
-            {
-                Console.WriteLine("\n" +
-                                  "==========================\n" +
-                                  "    {0} won the game,\n" +
-                                  "    Congratulations!!\n" +
-                                  "==========================", p2Details.m_Name);
-            }
+
+            m_PointsSum = p1Details.m_Points + p2Details.m_Points;
         }
 
         private static int afterGameOptions()
