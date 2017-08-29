@@ -3,17 +3,27 @@ using Ex02.ConsoleUtils;
 
 namespace C17_Ex02
 {
+
     class TicTacToeUserInterface
     {
+
+
         private static readonly char[] m_Symbols = {'X', 'O'};
         private static int m_NumOfTurns;
         private static bool m_GameRunning = true;
 
-        protected enum Options
+        private enum StartGameOptions
         {
             SinglePlayer = 1,
             MultiPlayer,
             Instractions,
+            Exit
+        };
+
+        private enum EndGameOptions
+        {
+            PlayAgain = 1,
+            MainMenu,
             Exit
         };
 
@@ -46,7 +56,7 @@ namespace C17_Ex02
         }
 
         //The method gets player's input, creates a matrix accordingly and returns it
-        public static char[,] tableSizeInput()
+        private static char[,] tableSizeInput()
         {
             bool loopRunner = true;
             char[,] io_gameTable = null;
@@ -66,7 +76,7 @@ namespace C17_Ex02
                     {
                         throw new InvalidOperationException("Please enter numbers only");
                     }
-                    else if (tableSize < 3 || tableSize > 9)
+                    if (tableSize < 3 || tableSize > 9)
                     {
                         throw new InvalidOperationException("You inserted an invalid number, try again!");
                     }
@@ -90,7 +100,7 @@ namespace C17_Ex02
         }
 
         //The method intialize the table's values
-        public static void initTable(char[,] io_table)
+        private static void initTable(char[,] io_table)
         {
             int length = io_table.GetLength(0);
             for (int i = 0; i < length; i++)
@@ -103,14 +113,14 @@ namespace C17_Ex02
         }
 
         //The method puts Player input into PlayerDetails object
-        public static void inputName(ref PlayerDetails io_player)
+        private static void inputName(ref PlayerDetails io_player)
         {
             Console.Write("Enter your name: ");
             io_player.m_Name = Console.ReadLine();
         }
 
         //The method Draws the game board
-        public static void drawTable(char[,] io_mat)
+        private static void drawTable(char[,] io_mat)
         {
             int edgeSize = io_mat.GetLength(0);
 
@@ -141,9 +151,10 @@ namespace C17_Ex02
         public static void optionSelect()
         {
             bool loopRunner = true;
+
             do
             {
-                Console.Write("Please Choose an option: ");
+                Console.Write("\nPlease Choose an option: ");
                 try
                 {
                     string userDecision = Console.ReadLine();
@@ -155,29 +166,98 @@ namespace C17_Ex02
                     {
                         throw new InvalidOperationException("Please enter chosen option number!");
                     }
-                    else if (optionChosen < 1 || optionChosen > 4)
+                    if (optionChosen < 1 || optionChosen > 4)
                     {
                         throw new InvalidOperationException("Please enter number between 1 to 4!");
                     }
                     Screen.Clear();
-                    Options answer = (Options)optionChosen;
-                    switch (answer)
+                    StartGameOptions startAnswer = (StartGameOptions) optionChosen;
+                    switch (startAnswer)
                     {
-                        case Options.SinglePlayer:
+                        case StartGameOptions.SinglePlayer:
                         {
+                            PlayerDetails player = new PlayerDetails();
+                            PlayerDetails computer = new PlayerDetails();
+
+                            EndGameOptions endAnswer;
+
+                            player.m_PlayerSymbol = m_Symbols[0];
+                            computer.m_PlayerSymbol = m_Symbols[1];
+
+                            inputName(ref player);
+                            computer.m_Name = "Computer";
+
                             gameTable = tableSizeInput();
-                            singlePlayer(ref gameTable);
+                            singlePlayer(ref gameTable, ref player, ref computer);
+
+                            do
+                            {
+                                gameTable = tableSizeInput();
+                                singlePlayer(ref gameTable, ref player, ref computer);
+
+                                endAnswer = (EndGameOptions)afterGameOptions();
+
+                                if (endAnswer == EndGameOptions.MainMenu)
+                                {
+                                    break;
+                                }
+                                if (endAnswer == EndGameOptions.Exit)
+                                {
+                                    Environment.Exit(0);
+                                }
+                            } while (endAnswer == EndGameOptions.PlayAgain);
+
+                            if (endAnswer == EndGameOptions.MainMenu)
+                            {
+                                displayMenu();
+                                continue;
+                            }
                             break;
                         }
-                        case Options.MultiPlayer:
+                        case StartGameOptions.MultiPlayer:
                         {
-                            gameTable = tableSizeInput();
-                            multiPlayer(ref gameTable);
+                            PlayerDetails player1 = new PlayerDetails();
+                            PlayerDetails player2 = new PlayerDetails();
+
+                            EndGameOptions endAnswer;
+
+                            player1.m_PlayerSymbol = m_Symbols[0];
+                            player2.m_PlayerSymbol = m_Symbols[1];
+
+                            Console.Write("First player - ");
+                            inputName(ref player1);
+                            Console.Write("Second player -");
+                            inputName(ref player2);
+
+                            do
+                            {
+                                gameTable = tableSizeInput();
+                                multiPlayer(ref gameTable, ref player1, ref player2);
+
+                                endAnswer = (EndGameOptions) afterGameOptions();
+
+                                if (endAnswer == EndGameOptions.MainMenu)
+                                {
+                                    break;
+                                }
+                                if (endAnswer == EndGameOptions.Exit)
+                                {
+                                    Environment.Exit(0);
+                                }
+                            } while (endAnswer == EndGameOptions.PlayAgain);
+
+                            if (endAnswer == EndGameOptions.MainMenu)
+                            {
+                                displayMenu();
+                                continue;
+                            }
                             break;
                         }
-                        case Options.Instractions:
-                            break;
-                        case Options.Exit:
+                        case StartGameOptions.Instractions:
+                            presentInstractions();
+                            displayMenu();
+                            continue;
+                        case StartGameOptions.Exit:
                         {
                             Environment.Exit(0);
                             break;
@@ -199,21 +279,106 @@ namespace C17_Ex02
                 loopRunner = false;
             } while (loopRunner);
         }
-        
-        //The method runs the single-player game
-        private static void singlePlayer(ref char[,] io_singleGameBoard)
+
+        //Displays Game Instractions
+        private static void presentInstractions()
         {
-            PlayerDetails player = new PlayerDetails();
-            PlayerDetails computer = new PlayerDetails();
+            Console.WriteLine("Game Instractions: ");
+            Console.WriteLine("~~~~~~~~~~~~~~~~~~");
+            Console.WriteLine("You can choose to play against another player or the computer. ");
+            Console.WriteLine("\nWhen you start the game you coose game board size, between 3*3 to 9*9.");
+            Console.WriteLine("The game starts with an empty board, which can contain\n" +
+                              "two symbols - 'X' or 'O', so each player uses his symbol.");
+            Console.WriteLine("\nIn each turn the player puts a symbol into a cell in the game board,\n" +
+                              "in order to make the opponent create a sequence of his type\n" +
+                              "as the length of the board.");
+            Console.WriteLine("Meaning, if the board length is 5*5,\n" +
+                              "The first player who reaches a sequence of 5 symbols loses!");
+
+            Console.WriteLine("\nPress 'Enter' to return to main munu!");
+            Console.ReadKey();
+
+            Screen.Clear();
+        }
+
+        private static void displayResults(PlayerDetails p1Details, PlayerDetails p2Details) 
+        {
+            Console.Write("Match Result - ");
+            Console.WriteLine("{0} : {1}", p1Details.m_Points, p2Details.m_Points);
+
+            if (p1Details.m_Points == p2Details.m_Points) //Draw
+            {
+                Console.WriteLine("\n" +
+                                  "==========================\n" +
+                                  "      You got draw!!\n" +
+                                  "==========================");
+            }
+            else if (p1Details.m_Points > p2Details.m_Points) //Player 1 won
+            {
+                Console.WriteLine("\n" +
+                                  "==========================\n" +
+                                  "    {0} won the game,\n" +
+                                  "    Congratulations!!\n" +
+                                  "==========================", p1Details.m_Name);
+            }
+            else // player 2 won
+            {
+                Console.WriteLine("\n" +
+                                  "==========================\n" +
+                                  "    {0} won the game,\n" +
+                                  "    Congratulations!!\n" +
+                                  "==========================", p2Details.m_Name);
+            }
+        }
+
+        private static int afterGameOptions()
+        {
+            bool loopRunner = true;
+            int optionChosen = 2;
+
+            Console.WriteLine("\n1. Play again");
+            Console.WriteLine("2. Return to main menu");
+            Console.WriteLine("3. Quit the game\n");
+
+            do
+            {
+                Console.Write("Please Choose an option: ");
+                try
+                {
+                    string userDecision = Console.ReadLine();
+                    
+                    bool convertionSucceded = Int32.TryParse(userDecision, out optionChosen);
+                    
+                    if (!convertionSucceded)
+                    {
+                        throw new InvalidOperationException("Please enter chosen option number!");
+                    }
+                    if (optionChosen < 1 || optionChosen > 3)
+                    {
+                        throw new InvalidOperationException("Please enter number between 1 to 3!");
+                    }
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    continue;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    continue;
+                }
+                loopRunner = false;
+            } while (loopRunner);
+
+            return optionChosen;
+        }
+
+        //The method runs the single-player game
+        private static void singlePlayer(ref char[,] io_singleGameBoard, ref PlayerDetails human, ref PlayerDetails comp)
+        {
             m_NumOfTurns = 0;
-
-            player.m_PlayerSymbol = m_Symbols[0];
-            computer.m_PlayerSymbol = m_Symbols[1];
-
-            Console.WriteLine();
-            inputName(ref player);
-            computer.m_Name = "Computer";
-
+            
             Console.WriteLine("\nYou Begin, follow the orders in every level\n" +
                               "to quit at any point press 'Q', " +
                               "press 'Enter to start the game!'\n");
@@ -224,9 +389,9 @@ namespace C17_Ex02
             {
                 drawTable(io_singleGameBoard); //draws the table
 
-                if (m_Symbols[m_NumOfTurns % 2] == player.m_PlayerSymbol)
+                if (m_Symbols[m_NumOfTurns % 2] == human.m_PlayerSymbol)
                 {
-                    m_GameRunning = TicTacToeLogic.playerInput(player.m_PlayerSymbol, io_singleGameBoard, player);
+                    m_GameRunning = playerInput(human.m_PlayerSymbol, io_singleGameBoard, human);
                     if (!m_GameRunning)
                     {
                         Screen.Clear();
@@ -235,49 +400,37 @@ namespace C17_Ex02
                         return;
                     }
                 }
-                else if (m_Symbols[m_NumOfTurns % 2] == computer.m_PlayerSymbol)
+                else if (m_Symbols[m_NumOfTurns % 2] == comp.m_PlayerSymbol)
                 {
-                    TicTacToeLogic.computerMove(ref io_singleGameBoard, computer);
+                    TicTacToeLogic.computerMove(ref io_singleGameBoard, comp);
                 }
 
-                bool isPlayerLost = TicTacToeLogic.checkforStraight(io_singleGameBoard, m_Symbols[m_NumOfTurns % 2], m_NumOfTurns);
-                m_NumOfTurns++;
-
-                if (m_NumOfTurns == io_singleGameBoard.Length)
-                {
-                    Console.WriteLine("You got 'Draw', Game Over!");
-                    continue;
-                }
+                bool isPlayerLost =
+                    TicTacToeLogic.checkforStraight(io_singleGameBoard, m_Symbols[m_NumOfTurns % 2], m_NumOfTurns);
                 if (isPlayerLost)
                 {
+                    TicTacToeLogic.findWinner(ref human, ref comp, m_Symbols[m_NumOfTurns % 2]);
                     m_GameRunning = false;
                     continue;
                 }
+
+                m_NumOfTurns++;
                 Screen.Clear();
             }
+
             Screen.Clear();
             drawTable(io_singleGameBoard);
-            TicTacToeLogic.findWinner(player, computer, m_Symbols[(m_NumOfTurns + 1) % 2]);
+            displayResults(human, comp);
         }
-        
+
         //The method runs the multi-player game
-        private static void multiPlayer(ref char[,] io_multiGameBoard)
+        private static void multiPlayer(ref char[,] io_multiGameBoard, ref PlayerDetails p1, ref PlayerDetails p2)
         {
-            PlayerDetails player1 = new PlayerDetails();
-            PlayerDetails player2 = new PlayerDetails();
             m_NumOfTurns = 0;
-
-            player1.m_PlayerSymbol = m_Symbols[0];
-            player2.m_PlayerSymbol = m_Symbols[1];
-
-            Console.Write("\nFirst player - ");
-            inputName(ref player1);
-            Console.Write("Second player -");
-            inputName(ref player2);
 
             Console.WriteLine("\n{0} begins, follow the orders in every level\n" +
                               "to quit at any point press 'Q', " +
-                              "press 'Enter to start the game!'\n", player1.m_Name);
+                              "press 'Enter to start the game!'\n", p1.m_Name);
             Console.ReadKey();
             Screen.Clear();
 
@@ -286,8 +439,8 @@ namespace C17_Ex02
             while (m_GameRunning && m_NumOfTurns != io_multiGameBoard.Length)
             {
                 drawTable(io_multiGameBoard); //draws the table
-                m_GameRunning = TicTacToeLogic.playerInput(m_Symbols[m_NumOfTurns % 2], io_multiGameBoard,
-                    (m_NumOfTurns % 2 == 0) ? player1 : player2);
+                m_GameRunning = playerInput(m_Symbols[m_NumOfTurns % 2], io_multiGameBoard,
+                    (m_NumOfTurns % 2 == 0) ? p1 : p2);
 
                 if (!m_GameRunning)
                 {
@@ -295,36 +448,87 @@ namespace C17_Ex02
                     Console.WriteLine("You left the game, see you soon");
                     return;
                 }
-
-                bool isPlayerLost =
-                    TicTacToeLogic.checkforStraight(io_multiGameBoard, m_Symbols[m_NumOfTurns % 2], m_NumOfTurns);
-                m_NumOfTurns++;
-
-                //if table is full
-                if (m_NumOfTurns == io_multiGameBoard.Length)
-                {
-                    Console.WriteLine("You got 'Draw', Game Over!");
-                    continue;
-                }
+                bool isPlayerLost = TicTacToeLogic.checkforStraight(io_multiGameBoard, m_Symbols[m_NumOfTurns % 2], m_NumOfTurns);
+                
                 //if player lost
                 if (isPlayerLost)
                 {
+                    TicTacToeLogic.findWinner(ref p1, ref p2, m_Symbols[m_NumOfTurns % 2]);
                     m_GameRunning = false;
                     continue;
                 }
+
+                m_NumOfTurns++;
                 Screen.Clear();
             }
+            
             Screen.Clear();
             drawTable(io_multiGameBoard);
-            TicTacToeLogic.findWinner(player1, player2, m_Symbols[(m_NumOfTurns + 1) % 2]);
+            displayResults(p1, p2);
         }
-        /*
-        private static void presentInstractions()
+
+        //The method inserts player's move and returns true when move accepted, false if he choose to end match
+        private static bool playerInput(char i_symbol, char[,] io_table, PlayerDetails player)
         {
-            
+            bool isInteger = false;
+
+            Console.WriteLine("{0}, Please make your move", player.m_Name);
+            do
+            {
+                try
+                {
+                    Console.Write("please enter row selection: ");
+                    string input1 = Console.ReadLine();
+                    if (string.IsNullOrEmpty(input1))
+                    {
+                        Console.WriteLine("You didn't enter a value!");
+                        continue;
+                    }
+                    char rowInput = char.Parse(input1);
+
+                    Console.Write("Please enter collumn selection: ");
+                    string input2 = Console.ReadLine();
+                    if (string.IsNullOrEmpty(input2))
+                    {
+                        Console.WriteLine("You didn't enter a value!");
+                        continue;
+                    }
+
+                    char colInput = char.Parse(input2);
+
+                    // Checks if player wants to end match 
+                    if (colInput == 'Q' || rowInput == 'Q' || colInput == 'q' || rowInput == 'q')
+                    {
+                        return false;
+                    }
+
+                    int indexRow;
+                    int indexCol;
+                    isInteger = int.TryParse(rowInput.ToString(), out indexRow);
+                    isInteger = int.TryParse(colInput.ToString(), out indexCol);
+
+                    if (!isInteger)
+                    {
+                        throw new InvalidOperationException("please enter numbers of rows and cols");
+                    }
+
+                    bool isInsertable = TicTacToeLogic.TryInsert(i_symbol, ref io_table, indexRow - 1, indexCol - 1);
+                    if (!isInsertable)
+                    {
+                        throw new InvalidOperationException("There is no space in this spot, please try again");
+                    }
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Your input is invalid, please try again");
+                }
+            } while (!isInteger && !isInteger);
+
+            return true; //Returns that player made his move
         }
-        */
     }
 }
-
-

@@ -19,12 +19,6 @@
             set => m_Name = value;
         }
       
-        public byte Points
-        {
-            get => m_Points;
-            set => m_Points = value;
-        }
-        
         public char PlayerSymbol
         {
             get => m_PlayerSymbol;
