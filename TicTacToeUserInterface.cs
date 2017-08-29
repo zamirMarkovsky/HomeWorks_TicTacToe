@@ -300,10 +300,10 @@ namespace C17_Ex02
             Screen.Clear();
         }
 
-        private static void displayMatchesResult(PlayerDetails p1Details, PlayerDetails p2Details)
+        private static void displayMatchesResult(PlayerDetails io_p1Details, PlayerDetails io_p2Details)
         {
             Console.Write("\nMatches Result - ");
-            Console.WriteLine("{0} : {1}", p1Details.m_Points, p2Details.m_Points);
+            Console.WriteLine("{0} : {1}", io_p1Details.m_Points, io_p2Details.m_Points);
 
         }
 
@@ -351,7 +351,7 @@ namespace C17_Ex02
         }
 
         //The method runs the single-player game
-        private static void singlePlayer(ref char[,] io_singleGameBoard, ref PlayerDetails human, ref PlayerDetails comp)
+        private static void singlePlayer(ref char[,] io_singleGameBoard, ref PlayerDetails io_human, ref PlayerDetails io_comp)
         {
             m_NumOfTurns = 0;
             m_GameRunning = true;
@@ -365,9 +365,9 @@ namespace C17_Ex02
             {
                 drawTable(io_singleGameBoard); //draws the table
 
-                if (m_Symbols[m_NumOfTurns % 2] == human.m_PlayerSymbol)
+                if (m_Symbols[m_NumOfTurns % 2] == io_human.m_PlayerSymbol)
                 {
-                    m_GameRunning = playerInput(human.m_PlayerSymbol, io_singleGameBoard, human);
+                    m_GameRunning = playerInput(io_human.m_PlayerSymbol, io_singleGameBoard, io_human);
                     if (!m_GameRunning)
                     {
                         Screen.Clear();
@@ -376,16 +376,15 @@ namespace C17_Ex02
                         return;
                     }
                 }
-                else if (m_Symbols[m_NumOfTurns % 2] == comp.m_PlayerSymbol)
+                else if (m_Symbols[m_NumOfTurns % 2] == io_comp.m_PlayerSymbol)
                 {
-                    TicTacToeLogic.computerMove(ref io_singleGameBoard, comp);
+                    TicTacToeLogic.computerMove(ref io_singleGameBoard, io_comp);
                 }
 
-                bool isPlayerLost =
-                    TicTacToeLogic.checkforStraight(io_singleGameBoard, m_Symbols[m_NumOfTurns % 2], m_NumOfTurns);
+                bool isPlayerLost = TicTacToeLogic.checkforStraight(io_singleGameBoard, m_Symbols[m_NumOfTurns % 2], m_NumOfTurns);
                 if (isPlayerLost)
                 {
-                    string winner = TicTacToeLogic.findWinner(ref human, ref comp, m_Symbols[m_NumOfTurns % 2]);
+                    string winner = TicTacToeLogic.findWinner(ref io_human, ref io_comp, m_Symbols[m_NumOfTurns % 2]);
 
                     Screen.Clear();
                     drawTable(io_singleGameBoard);
@@ -396,6 +395,7 @@ namespace C17_Ex02
                     break;
                 }
 
+                m_NumOfTurns++;
                 if (m_NumOfTurns == io_singleGameBoard.Length)
                 {
                     Screen.Clear();
@@ -407,21 +407,20 @@ namespace C17_Ex02
                     break;
                 }
 
-                m_NumOfTurns++;
                 Screen.Clear();
             }
 
-            displayMatchesResult(human, comp);
+            displayMatchesResult(io_human, io_comp);
         }
 
         //The method runs the multi-player game
-        private static void multiPlayer(ref char[,] io_multiGameBoard, ref PlayerDetails p1, ref PlayerDetails p2)
+        private static void multiPlayer(ref char[,] io_multiGameBoard, ref PlayerDetails io_p1, ref PlayerDetails io_p2)
         {
             m_NumOfTurns = 0;
 
             Console.WriteLine("\n{0} begins, follow the orders in every level\n" +
                               "to quit at any point press 'Q', " +
-                              "press 'Enter to start the game!'\n", p1.m_Name);
+                              "press 'Enter to start the game!'\n", io_p1.m_Name);
             Console.ReadKey();
             Screen.Clear();
 
@@ -431,7 +430,7 @@ namespace C17_Ex02
             {
                 drawTable(io_multiGameBoard); //draws the table
                 m_GameRunning = playerInput(m_Symbols[m_NumOfTurns % 2], io_multiGameBoard,
-                    (m_NumOfTurns % 2 == 0) ? p1 : p2);
+                    (m_NumOfTurns % 2 == 0) ? io_p1 : io_p2);
 
                 if (!m_GameRunning)
                 {
@@ -442,19 +441,20 @@ namespace C17_Ex02
                 bool isPlayerLost = TicTacToeLogic.checkforStraight(io_multiGameBoard, m_Symbols[m_NumOfTurns % 2], m_NumOfTurns);
 
                 //if player lost
-                if (isPlayerLost) //declares winned and ends game
+                if (isPlayerLost)
                 {
-                    string winner = TicTacToeLogic.findWinner(ref p1, ref p2, m_Symbols[m_NumOfTurns % 2]);
+                    string winner = TicTacToeLogic.findWinner(ref io_p1, ref io_p2, m_Symbols[m_NumOfTurns % 2]);
 
                     Screen.Clear();
                     drawTable(io_multiGameBoard);
                     Console.WriteLine("\n" +
                                       "==========================\n" +
-                                      "   {0} won the game!\n" +
+                                      "   {0} won the game\n" +
                                       "==========================", winner);
                     break;
                 }
 
+                m_NumOfTurns++;
                 if (m_NumOfTurns == io_multiGameBoard.Length)
                 {
                     Screen.Clear();
@@ -466,22 +466,19 @@ namespace C17_Ex02
                     break;
                 }
 
-                m_NumOfTurns++;
                 Screen.Clear();
             }
 
-            Screen.Clear();
-            drawTable(io_multiGameBoard);
-            displayMatchesResult(p1, p2);
+            displayMatchesResult(io_p1, io_p2);
         }
 
         //The method inserts player's move and returns true when move accepted, false if he choose to end match
-        private static bool playerInput(char i_symbol, char[,] io_table, PlayerDetails player)
+        private static bool playerInput(char i_symbol, char[,] io_table, PlayerDetails io_player)
         {
             bool isInteger = false;
             bool isInsertable = false;
 
-            Console.WriteLine("{0}, Please make your move", player.m_Name);
+            Console.WriteLine("{0}, Please make your move", io_player.m_Name);
             do
             {
                 try
@@ -537,7 +534,7 @@ namespace C17_Ex02
                 }
             } while (!isInteger || !isInsertable);
 
-            return true; //Returns that player made his move
+            return true; //Returns that io_player made his move
         }
     }
 }
