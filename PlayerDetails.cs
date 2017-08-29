@@ -18,7 +18,7 @@
             get => m_Name;
             set => m_Name = value;
         }
-      
+
         public char PlayerSymbol
         {
             get => m_PlayerSymbol;

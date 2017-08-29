@@ -93,16 +93,15 @@ namespace C17_Ex02
         }
 
         //The method declairs the winner
-        public static void findWinner(ref PlayerDetails io_player1, ref PlayerDetails io_player2, char symbol)
+        public static string findWinner(ref PlayerDetails io_player1, ref PlayerDetails io_player2, char symbol)
         {
             if (io_player1.m_PlayerSymbol == symbol)
             {
                 io_player2.m_Points++;
+                return io_player2.m_Name;
             }
-            else
-            {
-                io_player1.m_Points++;
-            }          
+            io_player1.m_Points++;
+            return io_player1.m_Name;            
         }
     }
 }
