@@ -59,7 +59,7 @@ namespace C17_Ex02
         private static char[,] tableSizeInput()
         {
             bool loopRunner = true;
-            char[,] io_gameTable = null;
+            char[,] gameTable = null;
 
             Screen.Clear();
             Console.WriteLine("Please set the size of the table.");
@@ -80,8 +80,8 @@ namespace C17_Ex02
                     {
                         throw new InvalidOperationException("You inserted an invalid number, try again!");
                     }
-                    io_gameTable = new char[tableSize, tableSize]; //A matrix for the game values
-                    initTable(io_gameTable); //initiate matrix with white spaces
+                    gameTable = new char[tableSize, tableSize]; //A matrix for the game values
+                    initTable(gameTable); //initiate matrix with white spaces
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -96,7 +96,7 @@ namespace C17_Ex02
                 loopRunner = false;
             } while (loopRunner);
 
-            return io_gameTable;
+            return gameTable;
         }
 
         //The method intialize the table's values
